@@ -34,7 +34,7 @@ entries:
           url: https://promptlylabs.github.io/prowler-helm-chart/docs/images/scans.png
     apiVersion: v2
     appVersion: 5.5.1
-    created: "2025-10-08T14:55:17.884235+01:00"
+    created: "2025-10-08T15:17:38.931744+01:00"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -62,6 +62,6 @@ entries:
     name: prowler
     type: application
     urls:
-    - http://guilhermealegre.github.io/prowler-helm-chart/prowler-0.0.2.tgz
+    - https://guilhermealegre.github.io/prowler-helm-chart/prowler-0.0.2.tgz
     version: 0.0.2
-generated: "2025-10-08T14:55:17.876163+01:00"
+generated: "2025-10-08T15:17:38.923275+01:00"
