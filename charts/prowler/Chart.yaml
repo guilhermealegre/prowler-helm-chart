@@ -13,19 +13,8 @@ keywords:
   - gcp
   - kubernetes
 maintainers:
-  - name: Dani
-    email: andre.gomes@promptlyhealth.com
-dependencies:
-  #https://cloudnative-pg.io/charts/
-  - name: postgresql
-    version: 0.26.1
-    repository: https://cloudnative-pg.io/charts/
-    alias: postgresql
-  #https://valkey.io/valkey-helm/
-  - name: valkey
-    version: 0.7.7
-    repository: https://valkey.io/valkey-helm/
-    condition: valkey.enabled
+  - name: guilhermealegre
+    email: guilherme93alegre@promptlyhealth.com
 annotations: 
   artifacthub.io/alternativeName: prowler-app
   artifacthub.io/category: security
@@ -48,13 +37,4 @@ annotations:
   artifacthub.io/screenshots: |
     - title: Sign In
       url: https://promptlylabs.github.io/prowler-helm-chart/docs/images/sign_in.png
-    - title: Sign Up
-      url: https://promptlylabs.github.io/prowler-helm-chart/docs/images/sign_up.png
-    - title: Homepage
-      url: https://promptlylabs.github.io/prowler-helm-chart/docs/images/overview.png
-    - title: Findings
-      url: https://promptlylabs.github.io/prowler-helm-chart/docs/images/findings.png
-    - title: Providers
-      url: https://promptlylabs.github.io/prowler-helm-chart/docs/images/providers.png
-    - title: Scans
-      url: https://promptlylabs.github.io/prowler-helm-chart/docs/images/scans.png
+
