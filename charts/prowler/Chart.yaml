@@ -23,15 +23,15 @@ dependencies:
     condition: postgresql.enabled
   # https://artifacthub.io/packages/helm/bitnami/valkey
   - name: valkey
-    version: 4.0.7
-    repository: https://charts.bitnami.com/bitnami
+    version: 0.7.7
+    repository: https://valkey.io/valkey-helm/
     condition: valkey.enabled
 annotations: 
   artifacthub.io/alternativeName: prowler-app
   artifacthub.io/category: security
   artifacthub.io/links: |
     - name: source
-      url: https://github.com/promptlylabs/prowler-helm-chart
+      url: https://github.com/guilhermealegre/prowler-helm-chart
     - name: application source
       url: https://github.com/prowler-cloud/prowler
     - name: support

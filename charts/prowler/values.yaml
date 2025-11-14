@@ -40,7 +40,7 @@ ui:
   image:
     repository: prowlercloud/prowler-ui
     # This sets the pull policy for images.
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
@@ -157,7 +157,7 @@ api:
   image:
     repository: prowlercloud/prowler-api
     # This sets the pull policy for images.
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
@@ -329,7 +329,7 @@ worker:
   image:
     repository: prowlercloud/prowler-api
     # This sets the pull policy for images.
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
@@ -422,7 +422,7 @@ worker_beat:
   image:
     repository: prowlercloud/prowler-api
     # This sets the pull policy for images.
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
   
