@@ -2,36 +2,6 @@
 nameOverride: ""
 fullnameOverride: ""
 
-postgresql:
-  # If enabled, it will create a Secret with the credentials.
-  # Otherwise, create a secret with the following:
-  # - POSTGRES_HOST
-  # - POSTGRES_PORT
-  # - POSTGRES_ADMIN_USER     - Existing user in charge of migrations, tables, permissions, RLS
-  # - POSTGRES_ADMIN_PASSWORD
-  # - POSTGRES_USER           - Will be created by ADMIN_USER
-  # - POSTGRES_PASSWORD
-  # - POSTGRES_DB             - Existing DB
-  enabled: true
-  global:
-    postgresql:
-      auth:
-        postgresPassword: postgres_password
-        database: prowler_db
-
-valkey:
-  # If enabled, it will create a Secret with the credentials.
-  # Otherwise, create a secret with
-  # - VALKEY_HOST
-  # - VALKEY_PORT
-  # - VALKEY_PASSWORD
-  # - VALKEY_DB
-  enabled: true
-  architecture: "standalone"
-  auth:
-    enabled: false
-    # password: valkey_password
-
 ui:  
   # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
   replicaCount: 2
@@ -40,7 +10,7 @@ ui:
   image:
     repository: prowlercloud/prowler-ui
     # This sets the pull policy for images.
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
@@ -157,7 +127,7 @@ api:
   image:
     repository: prowlercloud/prowler-api
     # This sets the pull policy for images.
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
@@ -329,7 +299,7 @@ worker:
   image:
     repository: prowlercloud/prowler-api
     # This sets the pull policy for images.
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
@@ -422,7 +392,7 @@ worker_beat:
   image:
     repository: prowlercloud/prowler-api
     # This sets the pull policy for images.
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
   

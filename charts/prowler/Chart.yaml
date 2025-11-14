@@ -16,12 +16,12 @@ maintainers:
   - name: Dani
     email: andre.gomes@promptlyhealth.com
 dependencies:
-  # https://artifacthub.io/packages/helm/bitnami/postgresql
+  #https://cloudnative-pg.io/charts/
   - name: postgresql
-    version: 18.0.8
-    repository: https://charts.bitnami.com/bitnami
-    condition: postgresql.enabled
-  # https://artifacthub.io/packages/helm/bitnami/valkey
+    version: 0.26.1
+    repository: https://cloudnative-pg.io/charts/
+    alias: postgresql
+  #https://valkey.io/valkey-helm/
   - name: valkey
     version: 0.7.7
     repository: https://valkey.io/valkey-helm/
