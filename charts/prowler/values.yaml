@@ -475,3 +475,20 @@ worker_beat:
   tolerations: []
 
   affinity: {}
+
+# PostgreSQL configuration
+postgresql:
+  enabled: false
+  # If enabled: false, provide connection details for an existing PostgreSQL instance
+  auth:
+    username: prowler
+    password: prowler_password
+    database: prowler
+
+# Valkey configuration
+# This chart can optionally deploy Valkey (Redis alternative) using the Bitnami chart
+valkey:
+  enabled: false
+  # If enabled: false, provide connection details for an existing Valkey/Redis instance
+  auth:
+    password: valkey_password
