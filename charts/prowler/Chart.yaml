@@ -1,4 +1,3 @@
-# Prowler Helm Chart
 apiVersion: v2
 name: prowler
 description: Prowler Helm Chart for Kubernetes - Cloud Security Tool
