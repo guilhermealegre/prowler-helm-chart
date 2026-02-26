@@ -1,0 +1,44 @@
+name: Update Helm Chart
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'prowler-app/**'
+
+jobs:
+  update-chart:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # Allows action to commit back to repository
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+
+      - name: Build and Package Helm Chart
+        run: |
+          mkdir -p docs
+          helm dependency update prowler-app
+          helm package prowler-app -d docs/
+          helm repo index docs/ --url https://guilhermealegre.github.io/prowler-helm-chart/
+
+      - name: Commit and Push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(helm): package and index updated short version [skip ci]"
+            git push
+          else
+            echo "No changes found to commit."
+          fi
