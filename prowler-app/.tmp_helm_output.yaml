@@ -1,0 +1,1549 @@
+---
+# Source: prowler/charts/postgresql/templates/primary/networkpolicy.yaml
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: foo-postgresql
+  namespace: "prowler"
+  labels:
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 18.1.0
+    helm.sh/chart: postgresql-18.2.0
+    app.kubernetes.io/component: primary
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: foo
+      app.kubernetes.io/name: postgresql
+      app.kubernetes.io/component: primary
+  policyTypes:
+    - Ingress
+    - Egress
+  egress:
+    - {}
+  ingress:
+    - ports:
+        - port: 5432
+---
+# Source: prowler/charts/postgresql/templates/primary/pdb.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: foo-postgresql
+  namespace: "prowler"
+  labels:
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 18.1.0
+    helm.sh/chart: postgresql-18.2.0
+    app.kubernetes.io/component: primary
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: foo
+      app.kubernetes.io/name: postgresql
+      app.kubernetes.io/component: primary
+---
+# Source: prowler/charts/postgresql/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: foo-postgresql
+  namespace: "prowler"
+  labels:
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 18.1.0
+    helm.sh/chart: postgresql-18.2.0
+automountServiceAccountToken: false
+---
+# Source: prowler/charts/valkey/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: foo-valkey
+  labels:
+    helm.sh/chart: valkey-0.9.3
+    app.kubernetes.io/name: valkey
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/version: "9.0.1"
+    app.kubernetes.io/managed-by: Helm
+automountServiceAccountToken: false
+---
+# Source: prowler/templates/api/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: foo-prowler-api
+  labels:
+    helm.sh/chart: prowler-0.0.1
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/version: "5.18.3"
+    app.kubernetes.io/managed-by: Helm
+automountServiceAccountToken: true
+---
+# Source: prowler/templates/ui/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: foo-prowler-ui
+  labels:
+    helm.sh/chart: prowler-0.0.1
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/version: "5.18.3"
+    app.kubernetes.io/managed-by: Helm
+automountServiceAccountToken: true
+---
+# Source: prowler/templates/worker/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: foo-prowler-worker
+  labels:
+    helm.sh/chart: prowler-0.0.1
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/version: "5.18.3"
+    app.kubernetes.io/managed-by: Helm
+automountServiceAccountToken: true
+---
+# Source: prowler/templates/worker_beat/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: foo-prowler-worker-beat
+  labels:
+    helm.sh/chart: prowler-0.0.1
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/version: "5.18.3"
+    app.kubernetes.io/managed-by: Helm
+automountServiceAccountToken: true
+---
+# Source: prowler/charts/postgresql/templates/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: foo-postgresql
+  namespace: "prowler"
+  labels:
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 18.1.0
+    helm.sh/chart: postgresql-18.2.0
+type: Opaque
+data:
+  postgres-password: "cURTQU5vbHZtTA=="
+  password: "cW1sOW9HUnFlUA=="
+  # We don't auto-generate LDAP password when it's not provided as we do for other passwords
+---
+# Source: prowler/templates/api/secret-valkey.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: foo-prowler-api-valkey
+  labels:
+    helm.sh/chart: prowler-0.0.1
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/version: "5.18.3"
+    app.kubernetes.io/managed-by: Helm
+type: Opaque
+stringData:
+  VALKEY_HOST: "foo-prowler-valkey"
+  VALKEY_PORT: "6379"
+  VALKEY_DB: "0"
+---
+# Source: prowler/charts/neo4j/templates/neo4j-config.yaml
+# Neo4j config values that are required for neo4j to work correctly in Kubernetes, these are not overridden by user-provided values
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "foo-k8s-config"
+  namespace: "prowler"
+  labels:
+    app: "prowler-neo4j"    
+data:
+  server.default_listen_address: "0.0.0.0"
+---
+# Source: prowler/charts/neo4j/templates/neo4j-config.yaml
+# User-provided Neo4j config values
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "foo-user-config"
+  namespace: "prowler"
+  labels:
+    app: "prowler-neo4j"    
+data:
+  dbms.security.tls_reload_enabled: "true"
+  dbms_security_procedures_allowlist: apoc.*
+  dbms_security_procedures_unrestricted: apoc.*
+  internal.dbms.sharded_property_database.enabled: "false"
+  server.config.strict_validation.enabled: "false"
+  server.jvm.additional: |-  
+    -XX:+UseG1GC
+    -XX:-OmitStackTraceInFastThrow
+    -XX:+AlwaysPreTouch
+    -XX:+UnlockExperimentalVMOptions
+    -XX:+TrustFinalNonStaticFields
+    -XX:+DisableExplicitGC
+    -Djdk.nio.maxCachedBufferSize=1024
+    -Dio.netty.tryReflectionSetAccessible=true
+    -Djdk.tls.ephemeralDHKeySize=2048
+    -Djdk.tls.rejectClientInitiatedRenegotiation=true
+    -XX:FlightRecorderOptions=stackdepth=256
+    -XX:+UnlockDiagnosticVMOptions
+    -XX:+DebugNonSafepoints
+    --add-opens=java.base/java.nio=ALL-UNNAMED
+    --add-opens=java.base/java.io=ALL-UNNAMED
+    --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+    -Dlog4j2.disable.jmx=true
+---
+# Source: prowler/charts/neo4j/templates/neo4j-config.yaml
+# Default Neo4j config values, these are overridden by user-provided values in foo-user-config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "foo-default-config"
+  namespace: "prowler"
+  labels:
+    app: "prowler-neo4j"    
+data:
+
+  # Neo4j defaults
+  db.tx_log.rotation.retention_policy: 1 days
+  server.windows_service_name: neo4j
+  
+  server.logs.config: /config/server-logs.xml/server-logs.xml
+  server.logs.user.config: /config/user-logs.xml/user-logs.xml
+
+  # Helm defaults
+
+  # Bolt keep alive
+  # this helps to ensure that LoadBalancers do not close bolt connections that are in use but appear idle
+  server.bolt.connection_keep_alive: "30s"
+  server.bolt.connection_keep_alive_for_requests: "ALL"
+  server.bolt.connection_keep_alive_streaming_scheduling_interval: "30s"
+
+  # If we set default advertised address it over-rides the bolt address used to populate the browser in a really annoying way
+  # dbms.default_advertised_address: "$(bash -c 'echo ${SERVICE_DOMAIN}')"
+
+
+  # Other
+  internal.dbms.ssl.system.ignore_dot_files: "true"
+
+  # set the below configs in case of cluster or analytics
+  # Logging
+  server.directories.logs: "/logs"
+  # Import
+  server.directories.import: "/import"
+
+  # Use more reliable defaults SSL / TLS settings for K8s
+  dbms.ssl.policy.bolt.client_auth: "NONE"
+  dbms.ssl.policy.https.client_auth: "NONE"
+---
+# Source: prowler/charts/neo4j/templates/neo4j-config.yaml
+# User-provided Neo4j Apoc config values
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "foo-apoc-config"
+  namespace: "prowler"
+  labels:
+    app: "prowler-neo4j"    
+data:
+  apoc.conf: |-
+      apoc.export.file.enabled=true
+      apoc.import.file.enabled=true
+      apoc.import.file.use_neo4j_config=true
+---
+# Source: prowler/charts/neo4j/templates/neo4j-config.yaml
+# server-logs.xml as configmap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "foo-server-logs-config"
+  namespace: "prowler"
+  labels:
+    app: "prowler-neo4j"    
+data:
+  server-logs.xml: |-
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!--
+    
+        Copyright (c) "Neo4j"
+        Neo4j Sweden AB [http://neo4j.com]
+        This file is a commercial add-on to Neo4j Enterprise Edition.
+    
+    -->
+    <!--
+        This is a log4j 2 configuration file.
+    
+        It is highly recommended to keep the original "debug.log" as is, to make sure enough data is captured in case
+        of errors in a format that neo4j developers can work with.
+    
+        All configuration values can be queried with the lookup prefix "config:". You can for example, resolve
+        the path to your neo4j home directory with ${config:dbms.directories.neo4j_home}.
+    
+        Please consult https://logging.apache.org/log4j/2.x/manual/configuration.html for instructions and
+        available configuration options.
+    -->
+    <Configuration status="ERROR" monitorInterval="30" packages="org.neo4j.logging.log4j">
+        <Appenders>
+            <!-- Default debug.log, please keep -->
+            <RollingRandomAccessFile name="DebugLog" fileName="${config:server.directories.logs}/debug.log"
+                                     filePattern="$${config:server.directories.logs}/debug.log.%02i">
+                <Neo4jDebugLogLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSSZ}{GMT+0} %-5p [%c{1.}] %m%n"/>
+                <Policies>
+                    <SizeBasedTriggeringPolicy size="20 MB"/>
+                </Policies>
+                <DefaultRolloverStrategy fileIndex="min" max="7"/>
+            </RollingRandomAccessFile>
+    
+            <RollingRandomAccessFile name="HttpLog" fileName="${config:server.directories.logs}/http.log"
+                                     filePattern="$${config:server.directories.logs}/http.log.%02i">
+                <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSSZ}{GMT+0} %-5p %m%n"/>
+                <Policies>
+                    <SizeBasedTriggeringPolicy size="20 MB"/>
+                </Policies>
+                <DefaultRolloverStrategy fileIndex="min" max="5"/>
+            </RollingRandomAccessFile>
+    
+            <RollingRandomAccessFile name="QueryLog" fileName="${config:server.directories.logs}/query.log"
+                                     filePattern="$${config:server.directories.logs}/query.log.%02i">
+                <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSSZ}{GMT+0} %-5p %m%n"/>
+                <Policies>
+                    <SizeBasedTriggeringPolicy size="20 MB"/>
+                </Policies>
+                <DefaultRolloverStrategy fileIndex="min" max="7"/>
+            </RollingRandomAccessFile>
+    
+            <RollingRandomAccessFile name="SecurityLog" fileName="${config:server.directories.logs}/security.log"
+                                     filePattern="$${config:server.directories.logs}/security.log.%02i">
+                <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSSZ}{GMT+0} %-5p %m%n"/>
+                <Policies>
+                    <SizeBasedTriggeringPolicy size="20 MB"/>
+                </Policies>
+                <DefaultRolloverStrategy fileIndex="min" max="7"/>
+            </RollingRandomAccessFile>
+        </Appenders>
+    
+        <Loggers>
+            <!-- Log levels. One of DEBUG, INFO, WARN, ERROR or OFF -->
+    
+            <!-- The debug log is used as the root logger to catch everything -->
+            <Root level="INFO">
+                <AppenderRef ref="DebugLog"/> <!-- Keep this -->
+            </Root>
+    
+            <!-- The query log, must be named "QueryLogger" -->
+            <Logger name="QueryLogger" level="INFO" additivity="false">
+                <AppenderRef ref="QueryLog"/>
+            </Logger>
+    
+            <!-- The http request log, must be named "HttpLogger" -->
+            <Logger name="HttpLogger" level="INFO" additivity="false">
+                <AppenderRef ref="HttpLog"/>
+            </Logger>
+    
+            <!-- The security log, must be named "SecurityLogger" -->
+            <Logger name="SecurityLogger" level="INFO" additivity="false">
+                <AppenderRef ref="SecurityLog"/>
+            </Logger>
+        </Loggers>
+    </Configuration>
+---
+# Source: prowler/charts/neo4j/templates/neo4j-config.yaml
+# user-logs.xml as configmap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "foo-user-logs-config"
+  namespace: "prowler"
+  labels:
+    app: "prowler-neo4j"    
+data:
+  user-logs.xml: |-
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!--
+    
+        Copyright (c) "Neo4j"
+        Neo4j Sweden AB [http://neo4j.com]
+        This file is a commercial add-on to Neo4j Enterprise Edition.
+    
+    -->
+    <!--
+        This is a log4j 2 configuration file that provides maximum flexibility.
+    
+        All configuration values can be queried with the lookup prefix "config:". You can for example, resolve
+        the path to your neo4j home directory with ${config:dbms.directories.neo4j_home}.
+    
+        Please consult https://logging.apache.org/log4j/2.x/manual/configuration.html for instructions and
+        available configuration options.
+    -->
+    <Configuration status="ERROR" monitorInterval="30" packages="org.neo4j.logging.log4j">
+    
+        <Appenders>
+            <RollingRandomAccessFile name="Neo4jLog" fileName="${config:server.directories.logs}/neo4j.log"
+                                     filePattern="$${config:server.directories.logs}/neo4j.log.%02i">
+                <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSSZ}{GMT+0} %-5p %m%n"/>
+                <Policies>
+                    <SizeBasedTriggeringPolicy size="20 MB"/>
+                </Policies>
+                <DefaultRolloverStrategy fileIndex="min" max="7"/>
+            </RollingRandomAccessFile>
+    
+            <!-- Only used by "neo4j console", will be ignored otherwise -->
+            <Console name="ConsoleAppender" target="SYSTEM_OUT">
+                <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSSZ}{GMT+0} %-5p %m%n"/>
+            </Console>
+        </Appenders>
+    
+        <Loggers>
+            <!-- Log level for the neo4j log. One of DEBUG, INFO, WARN, ERROR or OFF -->
+            <Root level="INFO">
+                <AppenderRef ref="Neo4jLog"/>
+                <AppenderRef ref="ConsoleAppender"/>
+            </Root>
+        </Loggers>
+    
+    </Configuration>
+---
+# Source: prowler/charts/neo4j/templates/neo4j-env.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "foo-env"
+  namespace: "prowler"
+  labels:
+    app: "prowler-neo4j"    
+data:
+  # It should not be necessary for neo4j users/administrators to modify this configMap
+  # Neo4j configuration is set in the foo-user-config ConfigMap
+  NEO4J_AUTH_PATH: "/config/neo4j-auth/NEO4J_AUTH"
+  NEO4J_EDITION: "COMMUNITY_K8S"
+  NEO4J_CONF: "/config/"
+  K8S_NEO4J_NAME: "prowler-neo4j"
+  EXTENDED_CONF: "yes"
+---
+# Source: prowler/charts/valkey/templates/init_config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: foo-valkey-init-scripts
+  labels:
+    helm.sh/chart: valkey-0.9.3
+    app.kubernetes.io/name: valkey
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/version: "9.0.1"
+    app.kubernetes.io/managed-by: Helm
+data:
+  init.sh: |-
+    #!/bin/sh
+    set -eu
+
+    # Default config paths
+    VALKEY_CONFIG=${VALKEY_CONFIG_PATH:-/data/conf/valkey.conf}
+
+    LOGFILE="/data/init.log"
+    DATA_DIR="/data/conf"
+
+    # Logging function (outputs to stderr and file)
+    log() {
+      echo "$(date) $1" | tee -a "$LOGFILE" >&2
+    }
+
+    # Clean old log if requested
+    if [ "${KEEP_OLD_LOGS:-false}" != "true" ]; then
+      rm -f "$LOGFILE"
+    fi
+
+    if [ -f "$LOGFILE" ]; then
+      log "Detected restart of this instance ($HOSTNAME)"
+    fi
+
+    log "Creating configuration in $DATA_DIR..."
+    mkdir -p "$DATA_DIR"
+    rm -f "$VALKEY_CONFIG"
+
+
+    # Base valkey.conf
+    log "Generating base valkey.conf"
+    {
+      echo "port 6379"
+      echo "protected-mode no"
+      echo "bind * -::*"
+      echo "dir /data"
+    } >>"$VALKEY_CONFIG"
+
+    # Append extra configs if present
+    if [ -f /usr/local/etc/valkey/valkey.conf ]; then
+      log "Appending /usr/local/etc/valkey/valkey.conf"
+      cat /usr/local/etc/valkey/valkey.conf >>"$VALKEY_CONFIG"
+    fi
+    if [ -d /extravalkeyconfigs ]; then
+      log "Appending files in /extravalkeyconfigs/"
+      cat /extravalkeyconfigs/* >>"$VALKEY_CONFIG"
+    fi
+---
+# Source: prowler/templates/api/configmap.yaml
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: foo-prowler-api
+  labels:
+    helm.sh/chart: prowler-0.0.1
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/version: "5.18.3"
+    app.kubernetes.io/managed-by: Helm
+data:
+  DJANGO_ACCESS_TOKEN_LIFETIME: "30"
+  DJANGO_ALLOWED_HOSTS: "*"
+  DJANGO_BIND_ADDRESS: "0.0.0.0"
+  DJANGO_BROKER_VISIBILITY_TIMEOUT: "86400"
+  DJANGO_CACHE_MAX_AGE: "3600"
+  DJANGO_DEBUG: "False"
+  DJANGO_FINDINGS_BATCH_SIZE: "1000"
+  DJANGO_LOGGING_FORMATTER: "ndjson"
+  DJANGO_LOGGING_LEVEL: "INFO"
+  DJANGO_MANAGE_DB_PARTITIONS: "True"
+  DJANGO_PORT: "8080"
+  DJANGO_REFRESH_TOKEN_LIFETIME: "1440"
+  DJANGO_SETTINGS_MODULE: "config.django.production"
+  DJANGO_STALE_WHILE_REVALIDATE: "60"
+  DJANGO_TMP_OUTPUT_DIRECTORY: "/tmp/prowler_api_output"
+  DJANGO_WORKERS: "4"
+---
+# Source: prowler/templates/ui/configmap.yaml
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: foo-prowler-ui
+data:
+  PROWLER_UI_VERSION: "stable"
+  AUTH_URL: ""
+  API_BASE_URL: "http://foo-prowler-api:8080/api/v1"
+  NEXT_PUBLIC_API_BASE_URL: "http://foo-prowler-api:8080/api/v1"
+  NEXT_PUBLIC_API_DOCS_URL: "http://foo-prowler-api:8080/api/v1/docs"
+  AUTH_TRUST_HOST: "true"
+  UI_PORT: "3000"
+---
+# Source: prowler/templates/api/role.yaml
+# https://docs.prowler.com/projects/prowler-open-source/en/latest/tutorials/prowler-app/#step-44-kubernetes-credentials
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: foo-prowler-api
+  labels:
+    helm.sh/chart: prowler-0.0.1
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/version: "5.18.3"
+    app.kubernetes.io/managed-by: Helm
+rules:
+- apiGroups: [""]
+  resources: ["pods", "configmaps", "nodes", "namespaces"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["clusterrolebindings", "rolebindings", "clusterroles", "roles"]
+  verbs: ["get", "list", "watch"]
+---
+# Source: prowler/templates/api/role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: foo-prowler-api
+  labels:
+    helm.sh/chart: prowler-0.0.1
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/version: "5.18.3"
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: foo-prowler-api
+subjects:
+- kind: ServiceAccount
+  name: foo-prowler-api
+  namespace: prowler
+---
+# Source: prowler/charts/neo4j/templates/neo4j-svc.yaml
+# ClusterIP service for bolt / http connections
+apiVersion: v1
+kind: Service
+metadata:
+  name: "foo"
+  namespace: "prowler"
+  labels:
+    helm.neo4j.com/neo4j.name: "prowler-neo4j"
+    app: "prowler-neo4j"
+    helm.neo4j.com/instance: "foo"
+    helm.neo4j.com/service: "default"    
+spec:
+  publishNotReadyAddresses: false
+  type: ClusterIP
+  selector:
+    app: "prowler-neo4j"
+    helm.neo4j.com/instance: "foo"
+  ports:
+    - protocol: TCP
+      port: 7687
+      targetPort: 7687
+      name: tcp-bolt
+    - protocol: TCP
+      port: 7474
+      targetPort: 7474
+      name: tcp-http
+---
+# Source: prowler/charts/neo4j/templates/neo4j-svc.yaml
+# ClusterIP service for admin connections to Neo4j inside Kubernetes.
+apiVersion: v1
+kind: Service
+metadata:
+  name: "foo-admin"
+  namespace: "prowler"
+  labels:
+    helm.neo4j.com/neo4j.name: "prowler-neo4j"
+    app: "prowler-neo4j"
+    helm.neo4j.com/instance: "foo"
+    helm.neo4j.com/service: "admin"    
+spec:
+  publishNotReadyAddresses: true
+  type: "ClusterIP"
+  selector:
+    app: "prowler-neo4j"
+    helm.neo4j.com/instance: "foo"
+  ports:
+    - protocol: TCP
+      port: 7687
+      targetPort: 7687
+      name: tcp-bolt
+    - protocol: TCP
+      port: 7474
+      targetPort: 7474
+      name: tcp-http
+---
+# Source: prowler/charts/postgresql/templates/primary/svc-headless.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: foo-postgresql-hl
+  namespace: "prowler"
+  labels:
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 18.1.0
+    helm.sh/chart: postgresql-18.2.0
+    app.kubernetes.io/component: primary
+  annotations:
+spec:
+  type: ClusterIP
+  clusterIP: None
+  # We want all pods in the StatefulSet to have their addresses published for
+  # the sake of the other Postgresql pods even before they're ready, since they
+  # have to be able to talk to each other in order to become ready.
+  publishNotReadyAddresses: true
+  ports:
+    - name: tcp-postgresql
+      port: 5432
+      targetPort: tcp-postgresql
+  selector:
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/component: primary
+---
+# Source: prowler/charts/postgresql/templates/primary/svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: foo-postgresql
+  namespace: "prowler"
+  labels:
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 18.1.0
+    helm.sh/chart: postgresql-18.2.0
+    app.kubernetes.io/component: primary
+spec:
+  type: ClusterIP
+  ports:
+    - name: tcp-postgresql
+      port: 5432
+      targetPort: tcp-postgresql
+      nodePort: null
+  selector:
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/component: primary
+---
+# Source: prowler/charts/valkey/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: foo-valkey
+  labels:
+    helm.sh/chart: valkey-0.9.3
+    app.kubernetes.io/name: valkey
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/version: "9.0.1"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: primary
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      targetPort: tcp
+      protocol: TCP
+      name: tcp
+  selector:
+    app.kubernetes.io/name: valkey
+    app.kubernetes.io/instance: foo
+---
+# Source: prowler/templates/api/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: foo-prowler-api
+  labels:
+    helm.sh/chart: prowler-0.0.1
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/version: "5.18.3"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: foo-prowler-api
+---
+# Source: prowler/templates/ui/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: foo-prowler-ui
+  labels:
+    helm.sh/chart: prowler-0.0.1
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/version: "5.18.3"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: foo-prowler-ui
+---
+# Source: prowler/charts/valkey/templates/deploy_valkey.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: foo-valkey
+  labels:
+    helm.sh/chart: valkey-0.9.3
+    app.kubernetes.io/name: valkey
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/version: "9.0.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: valkey
+      app.kubernetes.io/instance: foo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: valkey
+        app.kubernetes.io/instance: foo
+      annotations:
+        checksum/initconfig: b8baa3230bdac248aa98bef8703a1315
+    spec:
+      
+      automountServiceAccountToken: false
+      serviceAccountName: foo-valkey
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsUser: 1000
+      initContainers:
+        - name: foo-valkey-init
+          image: docker.io/valkey/valkey:9.0.1
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+          command: [ "/scripts/init.sh" ]
+          volumeMounts:
+            - name: valkey-data
+              mountPath: /data
+            - name: scripts
+              mountPath: /scripts
+      containers:
+        - name: foo-valkey
+          image: docker.io/valkey/valkey:9.0.1
+          imagePullPolicy: IfNotPresent
+          command: [ "valkey-server" ]
+          args: [ "/data/conf/valkey.conf" ]
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+          env:
+            - name: VALKEY_LOGLEVEL
+              value: "notice"
+          ports:
+            - name: tcp
+              containerPort: 6379
+              protocol: TCP
+          startupProbe:
+            exec:
+              command: [ "sh", "-c", "valkey-cli ping" ]
+          livenessProbe:
+            exec:
+              command: [ "sh", "-c", "valkey-cli ping" ]
+          resources:
+            {}
+          volumeMounts:
+            - name: valkey-data
+              mountPath: /data
+      volumes:
+        - name: scripts
+          configMap:
+            name: foo-valkey-init-scripts
+            defaultMode: 0555
+        - name: valkey-data
+          emptyDir: {}
+---
+# Source: prowler/templates/api/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: foo-prowler-api
+  labels:
+    helm.sh/chart: prowler-0.0.1
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/version: "5.18.3"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: foo-prowler-api
+  template:
+    metadata:
+      annotations:
+        secret-hash: "76da80500038ea8179711936b473dfe28fa3fae4d638b6e561d23d176c93d7d2"
+      labels:
+        helm.sh/chart: prowler-0.0.1
+        app.kubernetes.io/instance: foo
+        app.kubernetes.io/version: "5.18.3"
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: foo-prowler-api
+    spec:
+      serviceAccountName: foo-prowler-api
+      containers:
+        - name: api
+          image: "prowlercloud/prowler-api:5.18.3"
+          imagePullPolicy: IfNotPresent
+          command:
+            - /home/prowler/docker-entrypoint.sh
+          args:
+            - prod
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: foo-prowler-api
+            - secretRef:
+                name: foo-prowler-api-valkey
+          env:
+            - name: DJANGO_TOKEN_SIGNING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: prowler-secret
+                  key: DJANGO_TOKEN_SIGNING_KEY
+            - name: DJANGO_TOKEN_VERIFYING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: prowler-secret
+                  key: DJANGO_TOKEN_VERIFYING_KEY
+            - name: DJANGO_SECRETS_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: prowler-secret
+                  key: DJANGO_SECRETS_ENCRYPTION_KEY
+            
+            - name: POSTGRES_USER
+              value: "prowler"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: foo-postgresql
+                  key: password
+            - name: POSTGRES_DB
+              value: "prowler_db"
+            - name: POSTGRES_HOST
+              value: foo-postgresql
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_ADMIN_USER
+              value: postgres
+            - name: POSTGRES_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: foo-postgresql
+                  key: postgres-password
+            
+            - name: NEO4J_HOST
+              value: foo
+            - name: NEO4J_PORT
+              value: "7687"
+            - name: NEO4J_USER
+              value: "neo4j"
+            - name: NEO4J_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: prowler-secret
+                  key: NEO4J_PASSWORD
+          livenessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /api/v1/docs
+              port: http
+            periodSeconds: 20
+          readinessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /api/v1/docs
+              port: http
+            periodSeconds: 20
+---
+# Source: prowler/templates/ui/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: foo-prowler-ui
+  labels:
+    helm.sh/chart: prowler-0.0.1
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/version: "5.18.3"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: foo-prowler-ui
+  template:
+    metadata:
+      annotations:
+        secret-hash: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      labels:
+        helm.sh/chart: prowler-0.0.1
+        app.kubernetes.io/instance: foo
+        app.kubernetes.io/version: "5.18.3"
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: foo-prowler-ui
+    spec:
+      serviceAccountName: foo-prowler-ui
+      containers:
+        - name: ui
+          image: "prowlercloud/prowler-ui:5.18.3"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: AUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: prowler-secret
+                  key: AUTH_SECRET
+          envFrom:
+            - configMapRef:
+                name: foo-prowler-ui
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+---
+# Source: prowler/templates/worker/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: foo-prowler-worker
+  labels:
+    helm.sh/chart: prowler-0.0.1
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/version: "5.18.3"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: foo-prowler-worker
+  template:
+    metadata:
+      annotations:
+        secret-hash: "76da80500038ea8179711936b473dfe28fa3fae4d638b6e561d23d176c93d7d2"
+      labels:
+        helm.sh/chart: prowler-0.0.1
+        app.kubernetes.io/instance: foo
+        app.kubernetes.io/version: "5.18.3"
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: foo-prowler-worker
+    spec:
+      serviceAccountName: foo-prowler-worker
+      containers:
+        - name: worker
+          image: "prowlercloud/prowler-api:5.18.3"
+          imagePullPolicy: IfNotPresent
+          command:
+            - /home/prowler/docker-entrypoint.sh
+          args:
+            - worker
+          envFrom:
+            - configMapRef:
+                name: foo-prowler-api
+            - secretRef:
+                name: foo-prowler-api-valkey
+          env:
+            - name: DJANGO_TOKEN_SIGNING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: prowler-secret
+                  key: DJANGO_TOKEN_SIGNING_KEY
+            - name: DJANGO_TOKEN_VERIFYING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: prowler-secret
+                  key: DJANGO_TOKEN_VERIFYING_KEY
+            - name: DJANGO_SECRETS_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: prowler-secret
+                  key: DJANGO_SECRETS_ENCRYPTION_KEY
+            
+            - name: POSTGRES_USER
+              value: "prowler"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: foo-postgresql
+                  key: password
+            - name: POSTGRES_DB
+              value: "prowler_db"
+            - name: POSTGRES_HOST
+              value: foo-postgresql
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_ADMIN_USER
+              value: postgres
+            - name: POSTGRES_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: foo-postgresql
+                  key: postgres-password
+            
+            - name: NEO4J_HOST
+              value: foo
+            - name: NEO4J_PORT
+              value: "7687"
+            - name: NEO4J_USER
+              value: "neo4j"
+            - name: NEO4J_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: prowler-secret
+                  key: NEO4J_PASSWORD
+---
+# Source: prowler/templates/worker_beat/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: foo-prowler-worker-beat
+  labels:
+    helm.sh/chart: prowler-0.0.1
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/version: "5.18.3"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: foo-prowler-worker-beat
+  template:
+    metadata:
+      annotations:
+        secret-hash: "76da80500038ea8179711936b473dfe28fa3fae4d638b6e561d23d176c93d7d2"
+      labels:
+        helm.sh/chart: prowler-0.0.1
+        app.kubernetes.io/instance: foo
+        app.kubernetes.io/version: "5.18.3"
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: foo-prowler-worker-beat
+    spec:
+      serviceAccountName: foo-prowler-worker-beat
+      containers:
+        - name: worker-beat
+          image: "prowlercloud/prowler-api:5.18.3"
+          imagePullPolicy: IfNotPresent
+          command:
+            - ../docker-entrypoint.sh
+          args:
+            - beat
+          envFrom:
+            - configMapRef:
+                name: foo-prowler-api
+            - secretRef:
+                name: foo-prowler-api-valkey
+          env:
+            - name: DJANGO_TOKEN_SIGNING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: prowler-secret
+                  key: DJANGO_TOKEN_SIGNING_KEY
+            - name: DJANGO_TOKEN_VERIFYING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: prowler-secret
+                  key: DJANGO_TOKEN_VERIFYING_KEY
+            - name: DJANGO_SECRETS_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: prowler-secret
+                  key: DJANGO_SECRETS_ENCRYPTION_KEY
+            
+            - name: POSTGRES_USER
+              value: "prowler"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: foo-postgresql
+                  key: password
+            - name: POSTGRES_DB
+              value: "prowler_db"
+            - name: POSTGRES_HOST
+              value: foo-postgresql
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_ADMIN_USER
+              value: postgres
+            - name: POSTGRES_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: foo-postgresql
+                  key: postgres-password
+            
+            - name: NEO4J_HOST
+              value: foo
+            - name: NEO4J_PORT
+              value: "7687"
+            - name: NEO4J_USER
+              value: "neo4j"
+            - name: NEO4J_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: prowler-secret
+                  key: NEO4J_PASSWORD
+---
+# Source: prowler/charts/neo4j/templates/neo4j-statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    helm.neo4j.com/neo4j.name: "prowler-neo4j"
+    helm.neo4j.com/clustering: "false"
+    app: "prowler-neo4j"
+    helm.neo4j.com/instance: foo    
+  name: foo
+  namespace: "prowler"
+spec:
+  serviceName: "foo"
+  podManagementPolicy: "Parallel" # This setting means that the StatefulSet controller doesn't block applying changes until the existing Pod is READY.
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "prowler-neo4j"
+      helm.neo4j.com/instance: "foo"
+  template:
+    metadata:
+      labels:
+        app: "prowler-neo4j"
+        helm.neo4j.com/neo4j.name: "prowler-neo4j"
+        helm.neo4j.com/clustering: "false"
+        helm.neo4j.com/pod_category: "neo4j-instance" # used for anti affinity rules
+        helm.neo4j.com/neo4j.loadbalancer: "include"
+        helm.neo4j.com/instance: "foo"        
+      annotations:
+        "checksum/foo-config": 3d23343ea9c213ac663e2e0b45278472b21b75bc8d9dffd780b3a19511968440
+        "checksum/foo-env": ca8441e91d17c85eeba873d97d83df23afbe5047e5e0b0e32268e4736999163c        
+    spec:      
+      affinity:
+          podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchLabels:
+                    app: "prowler-neo4j"
+                    helm.neo4j.com/pod_category: "neo4j-instance"
+                topologyKey: kubernetes.io/hostname
+      dnsPolicy: ClusterFirst
+      securityContext: 
+        fsGroup: 7474
+        fsGroupChangePolicy: Always
+        runAsGroup: 7474
+        runAsNonRoot: true
+        runAsUser: 7474            
+      
+      terminationGracePeriodSeconds: 3600            
+      containers:
+        - name: "neo4j"
+          image: "neo4j:2025.12.1"
+          imagePullPolicy: "IfNotPresent"
+          envFrom:
+            - configMapRef:
+                name: "foo-env"
+          env:
+            - name: HELM_NEO4J_VERSION
+              value: "2025.12.1"
+            - name: HELM_CHART_VERSION
+              value: "2025.12.1"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: SERVICE_NEO4J_ADMIN
+              value: "foo-admin.prowler.svc.cluster.local"
+            - name: SERVICE_NEO4J_INTERNALS
+              value: "foo-internals.prowler.svc.cluster.local"
+            - name: SERVICE_NEO4J
+              value: "foo.prowler.svc.cluster.local"
+          ports:
+            - containerPort: 7474
+              name: http
+            - containerPort: 7687
+              name: bolt
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+          securityContext: 
+              capabilities:
+                drop:
+                - ALL
+              runAsGroup: 7474
+              runAsNonRoot: true
+              runAsUser: 7474
+          volumeMounts:
+            - mountPath: "/config/neo4j.conf"
+              name: neo4j-conf
+            - mountPath: "/config/server-logs.xml"
+              name: neo4j-server-logs
+            - mountPath: "/config/user-logs.xml"
+              name: neo4j-user-logs
+            - mountPath: "/config/neo4j-auth"
+              name: neo4j-auth
+                        
+            - mountPath: "/config/"
+              name: "apoc-conf"                                    
+            - mountPath: "/backups"
+              name: "data"
+              subPathExpr: "backups"
+            - mountPath: "/data"
+              name: "data"
+              subPathExpr: "data"
+            - mountPath: "/import"
+              name: "data"
+              subPathExpr: "import"
+            - mountPath: "/licenses"
+              name: "data"
+              subPathExpr: "licenses"
+            - mountPath: "/logs"
+              name: "data"
+              subPathExpr: "logs/$(POD_NAME)"
+            - mountPath: "/metrics"
+              name: "data"
+              subPathExpr: "metrics/$(POD_NAME)"                        
+          # Allow user to override the readinessProbe settings for advanced use cases
+          # See: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#probe-v1-core
+          readinessProbe:
+            # Allow overriding the probe action
+            tcpSocket:
+              port: 7687
+            # If no probe action is set, default to using tcpSocket probe to check port 7687 to check if bolt connections can be made
+            failureThreshold: 20
+            timeoutSeconds: 10
+            periodSeconds: 5
+          # Allow user to override the livenessProbe settings for advanced use cases
+          # See: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#probe-v1-core
+          livenessProbe:
+            # Allow overriding the probe action
+            tcpSocket:
+              port: 7687
+            # If no probe action is set, default to using tcpSocket probe to check port 7687 to check if bolt connections can be made
+            failureThreshold: 40
+            timeoutSeconds: 10
+            periodSeconds: 5
+          # Allow user to override the startupProbe settings for advanced use cases
+          # See: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#probe-v1-core
+          startupProbe:
+            # Allow overriding the probe action
+            tcpSocket:
+              port: 7687
+            failureThreshold: 1000
+            periodSeconds: 5
+      volumes:
+        - name: neo4j-conf
+          projected:
+            defaultMode: 0440
+            sources:
+              - configMap:
+                  name: "foo-default-config"
+              - configMap:
+                  name: "foo-user-config"
+              - configMap:
+                  name: "foo-k8s-config"
+        - name: neo4j-server-logs
+          configMap:
+            name: "foo-server-logs-config"
+        - name: neo4j-user-logs
+          configMap:
+            name: "foo-user-logs-config"
+        - name: "neo4j-auth"
+          secret:
+            secretName: "prowler-secret"                
+        - name: apoc-conf
+          projected:
+            defaultMode: 0440
+            sources:
+              - configMap:
+                  name: "foo-apoc-config"                        
+  volumeClaimTemplates: 
+    - metadata:
+        name: "data"
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+---
+# Source: prowler/charts/postgresql/templates/primary/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: foo-postgresql
+  namespace: "prowler"
+  labels:
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 18.1.0
+    helm.sh/chart: postgresql-18.2.0
+    app.kubernetes.io/component: primary
+spec:
+  replicas: 1
+  serviceName: foo-postgresql-hl
+  updateStrategy:
+    rollingUpdate: {}
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: foo
+      app.kubernetes.io/name: postgresql
+      app.kubernetes.io/component: primary
+  template:
+    metadata:
+      name: foo-postgresql
+      labels:
+        app.kubernetes.io/instance: foo
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: postgresql
+        app.kubernetes.io/version: 18.1.0
+        helm.sh/chart: postgresql-18.2.0
+        app.kubernetes.io/component: primary
+    spec:
+      serviceAccountName: foo-postgresql
+      
+      automountServiceAccountToken: false
+      affinity:
+        podAffinity:
+          
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/instance: foo
+                    app.kubernetes.io/name: postgresql
+                    app.kubernetes.io/component: primary
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        nodeAffinity:
+          
+      securityContext:
+        fsGroup: 1001
+        fsGroupChangePolicy: Always
+        supplementalGroups: []
+        sysctls: []
+      hostNetwork: false
+      hostIPC: false
+      containers:
+        - name: postgresql
+          image: registry-1.docker.io/bitnami/postgresql:latest
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1001
+            runAsNonRoot: true
+            runAsUser: 1001
+            seLinuxOptions: {}
+            seccompProfile:
+              type: RuntimeDefault
+          env:
+            - name: BITNAMI_DEBUG
+              value: "false"
+            - name: POSTGRESQL_PORT_NUMBER
+              value: "5432"
+            - name: POSTGRESQL_VOLUME_DIR
+              value: "/bitnami/postgresql"
+            - name: OPENSSL_FIPS
+              value: "yes"
+            - name: PGDATA
+              value: "/bitnami/postgresql/data"
+            # Authentication
+            - name: POSTGRES_USER
+              value: "prowler"
+            - name: POSTGRES_PASSWORD_FILE
+              value: /opt/bitnami/postgresql/secrets/password
+            - name: POSTGRES_POSTGRES_PASSWORD_FILE
+              value: /opt/bitnami/postgresql/secrets/postgres-password
+            - name: POSTGRES_DATABASE
+              value: "prowler_db"
+            # LDAP
+            - name: POSTGRESQL_ENABLE_LDAP
+              value: "no"
+            # TLS
+            - name: POSTGRESQL_ENABLE_TLS
+              value: "no"
+            # Audit
+            - name: POSTGRESQL_LOG_HOSTNAME
+              value: "false"
+            - name: POSTGRESQL_LOG_CONNECTIONS
+              value: "false"
+            - name: POSTGRESQL_LOG_DISCONNECTIONS
+              value: "false"
+            - name: POSTGRESQL_PGAUDIT_LOG_CATALOG
+              value: "off"
+            # Others
+            - name: POSTGRESQL_CLIENT_MIN_MESSAGES
+              value: "error"
+            - name: POSTGRESQL_SHARED_PRELOAD_LIBRARIES
+              value: "pgaudit"
+          ports:
+            - name: tcp-postgresql
+              containerPort: 5432
+          livenessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - exec pg_isready -U "prowler" -d "dbname=prowler_db" -h 127.0.0.1 -p 5432
+          readinessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - -e
+                - |
+                  exec pg_isready -U "prowler" -d "dbname=prowler_db" -h 127.0.0.1 -p 5432
+                  [ -f /opt/bitnami/postgresql/tmp/.initialized ] || [ -f /bitnami/postgresql/.initialized ]
+          resources:
+            limits:
+              cpu: 150m
+              ephemeral-storage: 2Gi
+              memory: 192Mi
+            requests:
+              cpu: 100m
+              ephemeral-storage: 50Mi
+              memory: 128Mi
+          volumeMounts:
+            - name: empty-dir
+              mountPath: /tmp
+              subPath: tmp-dir
+            - name: empty-dir
+              mountPath: /opt/bitnami/postgresql/conf
+              subPath: app-conf-dir
+            - name: empty-dir
+              mountPath: /opt/bitnami/postgresql/tmp
+              subPath: app-tmp-dir
+            - name: postgresql-password
+              mountPath: /opt/bitnami/postgresql/secrets/
+            - name: dshm
+              mountPath: /dev/shm
+            - name: data
+              mountPath: /bitnami/postgresql
+      volumes:
+        - name: empty-dir
+          emptyDir: {}
+        - name: postgresql-password
+          secret:
+            secretName: foo-postgresql
+        - name: dshm
+          emptyDir:
+            medium: Memory
+  volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "8Gi"

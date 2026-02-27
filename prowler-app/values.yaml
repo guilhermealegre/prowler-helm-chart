@@ -437,7 +437,7 @@ worker_beat:
     tag: ""
 
   command:
-    - ../docker-entrypoint.sh
+    - /home/prowler/docker-entrypoint.sh
   args:
     - beat
 
