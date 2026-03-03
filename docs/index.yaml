@@ -3,7 +3,7 @@ entries:
   prowler:
   - apiVersion: v2
     appVersion: 5.18.3
-    created: "2026-02-27T16:48:26.206625615Z"
+    created: "2026-03-03T09:47:17.27833964Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -20,7 +20,7 @@ entries:
     description: Prowler is an Open Cloud Security tool for AWS, Azure, GCP and Kubernetes.
       It helps for continuous monitoring, security assessments and audits, incident
       response, compliance, hardening and forensics readiness.
-    digest: b477de69ba7ce226d2d94239db6a519ea6b8664e0541ad86ea21d39bc8d7d2f6
+    digest: ecad47aff9020fe7781583855491e7c06f6ae2c9a1d2746c1e62d968b928af89
     home: https://prowler.com
     icon: https://cdn.prod.website-files.com/68c4ec3f9fb7b154fbcb6e36/68c5e0fea5d0059b9e05834b_Link.png
     keywords:
@@ -37,4 +37,4 @@ entries:
     urls:
     - https://guilhermealegre.github.io/prowler-helm-chart/prowler-0.0.1.tgz
     version: 0.0.1
-generated: "2026-02-27T16:48:26.191864918Z"
+generated: "2026-03-03T09:47:17.268159357Z"
